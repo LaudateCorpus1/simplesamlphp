@@ -6,6 +6,7 @@ namespace SimpleSAML\Test;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LogLevel;
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
 use SimpleSAML\Test\Utils\ArrayLogger;
@@ -26,7 +27,7 @@ class LoggerTest extends TestCase
         $this->originalLogger = Logger::getLoggingHandler();
         $config = [
             'logging.handler' => $handler,
-            'logging.level' => Logger::DEBUG
+            'logging.level' => LogLevel::DEBUG
         ];
 
         // testing statics is slightly painful
@@ -43,7 +44,7 @@ class LoggerTest extends TestCase
             // reset the logger and Configuration
             Configuration::clearInternalState();
             Logger::clearCapturedLog();
-            Logger::setLogLevel(Logger::INFO);
+            Logger::setLogLevel(LogLevel::INFO);
             Logger::setLoggingHandler($this->originalLogger);
         }
     }
@@ -104,24 +105,24 @@ class LoggerTest extends TestCase
     public function provideLogLevels(): array
     {
         return [
-           ['emergency', Logger::EMERG],
-           ['alert', Logger::ALERT],
-           ['critical', Logger::CRIT],
-           ['error', Logger::ERR],
-           ['warning', Logger::WARNING],
-           ['notice', Logger::NOTICE],
-           ['info', Logger::INFO],
-           ['debug', Logger::DEBUG],
+           ['emergency', LogLevel::EMERGENCY],
+           ['alert', LogLevel::ALERT],
+           ['critical', LogLevel::CRITICAL],
+           ['error', LogLevel::ERROR],
+           ['warning', LogLevel::WARNING],
+           ['notice', LogLevel::NOTICE],
+           ['info', LogLevel::INFO],
+           ['debug', LogLevel::DEBUG],
         ];
     }
 
 
     /**
      * @param string $method
-     * @param int $level
+     * @param string $level
      * @dataProvider provideLogLevels
      */
-    public function testLevelMethods(string $method, int $level): void
+    public function testLevelMethods(string $method, string $level): void
     {
         $this->setLoggingHandler(ArrayLogger::class);
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SimpleSAML;
 
 use Exception;
+use Psr\Log\LogLevel;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Logger\ErrorLogLoggingHandler;
 use SimpleSAML\Logger\FileLoggingHandler;
@@ -30,9 +31,9 @@ class Logger
     private static bool $initializing = false;
 
     /**
-     * @var integer|null
+     * @var string|null
      */
-    private static ?int $logLevel = null;
+    private static ?string $logLevel = null;
 
     /**
      * @var boolean
@@ -129,30 +130,6 @@ class Logger
      */
     private static bool $shuttingDown = false;
 
-    /** @var int */
-    public const EMERG = 0;
-
-    /** @var int */
-    public const ALERT = 1;
-
-    /** @var int */
-    public const CRIT = 2;
-
-    /** @var int */
-    public const ERR = 3;
-
-    /** @var int */
-    public const WARNING = 4;
-
-    /** @var int */
-    public const NOTICE = 5;
-
-    /** @var int */
-    public const INFO = 6;
-
-    /** @var int */
-    public const DEBUG = 7;
-
 
     /**
      * Log an emergency message.
@@ -161,7 +138,7 @@ class Logger
      */
     public static function emergency(string $string): void
     {
-        self::log(self::EMERG, $string);
+        self::log(LogLevel::EMERGENCY, $string);
     }
 
 
@@ -172,7 +149,7 @@ class Logger
      */
     public static function critical(string $string): void
     {
-        self::log(self::CRIT, $string);
+        self::log(LogLevel::CRITICAL, $string);
     }
 
 
@@ -183,7 +160,7 @@ class Logger
      */
     public static function alert(string $string): void
     {
-        self::log(self::ALERT, $string);
+        self::log(LogLevel::ALERT, $string);
     }
 
 
@@ -194,7 +171,7 @@ class Logger
      */
     public static function error(string $string): void
     {
-        self::log(self::ERR, $string);
+        self::log(LogLevel::ERROR, $string);
     }
 
 
@@ -205,7 +182,7 @@ class Logger
      */
     public static function warning(string $string): void
     {
-        self::log(self::WARNING, $string);
+        self::log(LogLevel::WARNING, $string);
     }
 
 
@@ -216,7 +193,7 @@ class Logger
      */
     public static function notice(string $string): void
     {
-        self::log(self::NOTICE, $string);
+        self::log(LogLevel::NOTICE, $string);
     }
 
 
@@ -227,7 +204,7 @@ class Logger
      */
     public static function info(string $string): void
     {
-        self::log(self::INFO, $string);
+        self::log(LogLevel::INFO, $string);
     }
 
 
@@ -239,7 +216,7 @@ class Logger
      */
     public static function debug(string $string): void
     {
-        self::log(self::DEBUG, $string);
+        self::log(LogLevel::DEBUG, $string);
     }
 
 
@@ -250,7 +227,7 @@ class Logger
      */
     public static function stats(string $string): void
     {
-        self::log(self::NOTICE, $string, self::$logLevel >= self::NOTICE);
+        self::log(LogLevel::NOTICE, $string, self::$logLevel >= LogLevel::NOTICE);
     }
 
 
@@ -402,9 +379,9 @@ class Logger
     /**
      * Sets the log level.
      *
-     * @param int $level One of the Logger class constants.
+     * @param string $level One of the Logger class constants.
      */
-    public static function setLogLevel(int $level): void
+    public static function setLogLevel(string $level): void
     {
         self::$logLevel = $level;
     }
@@ -412,11 +389,11 @@ class Logger
     /**
      * Defer a message for later logging.
      *
-     * @param int     $level The log level corresponding to this message.
+     * @param string     $level The log level corresponding to this message.
      * @param string  $message The message itself to log.
      * @param boolean $stats Whether this is a stats message or a regular one.
      */
-    private static function defer(int $level, string $message, bool $stats): void
+    private static function defer(string $level, string $message, bool $stats): void
     {
         // save the message for later
         self::$earlyLog[] = ['level' => $level, 'string' => $message, 'statsLog' => $stats];
@@ -449,7 +426,7 @@ class Logger
         $config = Configuration::getInstance();
 
         // setting minimum log_level
-        self::$logLevel = $config->getInteger('logging.level', self::INFO);
+        self::$logLevel = $config->getString('logging.level', LogLevel::INFO);
 
         // get the metadata handler option from the configuration
         if (is_null($handler)) {
@@ -483,17 +460,17 @@ class Logger
         } catch (Exception $e) {
             self::$loggingHandler = new ErrorLogLoggingHandler($config);
             self::$initializing = false;
-            self::log(self::CRIT, $e->getMessage(), false);
+            $this->log(LogLevel::CRITICAL, $e->getMessage(), false);
         }
     }
 
 
     /**
-     * @param int $level
+     * @param string $level
      * @param string $string
      * @param bool $statsLog
      */
-    private static function log(int $level, string $string, bool $statsLog = false): void
+    private static function log(string $level, string $string, bool $statsLog = false): void
     {
         if (self::$initializing) {
             // some error occurred while initializing logging

@@ -6,6 +6,7 @@ namespace SimpleSAML\Module\saml\IdP;
 
 use DOMNodeList;
 use Exception;
+use Psr\Log\LogLevel;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 use SAML2\Assertion;
 use SAML2\AuthnRequest;

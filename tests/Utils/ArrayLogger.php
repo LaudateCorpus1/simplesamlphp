@@ -19,7 +19,7 @@ class ArrayLogger implements LoggingHandlerInterface
         // don't do anything with the configuration
     }
 
-    public function log(int $level, string $string): void
+    public function log(string $level, string $string): void
     {
         $this->logs[$level][] = $string;
     }
