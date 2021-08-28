@@ -136,6 +136,13 @@ class Language
         'nn' => 'nn_NO',
     ];
 
+    /**
+     * The Logger to use
+     *
+     * @var \SimpleSAML\Logger
+     */
+    private Logger $logger;
+
 
     /**
      * Constructor
@@ -145,6 +152,7 @@ class Language
     public function __construct(Configuration $configuration)
     {
         $this->configuration = $configuration;
+        $this->logger = new Logger();
         $this->availableLanguages = $this->getInstalledLanguages();
         $this->defaultLanguage = $this->configuration->getString('language.default', 'en');
         $this->languageParameterName = $this->configuration->getString('language.parameter.name', 'language');
@@ -172,7 +180,7 @@ class Language
             if (array_key_exists($code, self::$language_names) && isset(self::$language_names[$code])) {
                 $availableLanguages[] = $code;
             } else {
-                Logger::error("Language \"$code\" not installed. Check config.");
+                $this->logger->error("Language \"$code\" not installed. Check config.");
             }
         }
         return $availableLanguages;
@@ -266,7 +274,7 @@ class Language
         if (array_key_exists($code, self::$language_names) && isset(self::$language_names[$code])) {
             return self::$language_names[$code];
         }
-        Logger::error("Name for language \"$code\" not found. Check config.");
+        $this->logger->error("Name for language \"$code\" not found. Check config.");
         return null;
     }
 

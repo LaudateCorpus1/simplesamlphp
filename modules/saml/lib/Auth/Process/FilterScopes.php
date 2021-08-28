@@ -26,6 +26,14 @@ class FilterScopes extends ProcessingFilter
     ];
 
     /**
+     * The Logger to use
+     *
+     * @var \SimpleSAML\Logger
+     */
+    private Logger $logger;
+
+
+    /**
      * Constructor for the processing filter.
      *
      * @param array &$config Configuration for this filter.
@@ -38,6 +46,8 @@ class FilterScopes extends ProcessingFilter
         if (array_key_exists('attributes', $config) && !empty($config['attributes'])) {
             $this->scopedAttributes = $config['attributes'];
         }
+
+        $this->logger = new Logger();
     }
 
     /**
@@ -77,12 +87,12 @@ class FilterScopes extends ProcessingFilter
                 } elseif (strpos($host, $scope) === strlen($host) - strlen($scope)) {
                     $newValues[] = $value;
                 } else {
-                    Logger::warning("Removing value '$value' for attribute '$attribute'. Undeclared scope.");
+                    $this->logger->warning("Removing value '$value' for attribute '$attribute'. Undeclared scope.");
                 }
             }
 
             if (empty($newValues)) {
-                Logger::warning("No suitable values for attribute '$attribute', removing it.");
+                $this->logger->warning("No suitable values for attribute '$attribute', removing it.");
                 unset($state['Attributes'][$attribute]); // remove empty attributes
             } else {
                 $state['Attributes'][$attribute] = $newValues;

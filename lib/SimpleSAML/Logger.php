@@ -135,12 +135,12 @@ class Logger extends AbstractLogger
     /**
      * Statistics.
      *
-     * @param string|\Stringable $message
+     * @param string $message
      * @param array  $context
      *
      * @return void
      */
-    public function stats(string|\Stringable $message, array $context = []): void
+    public function stats($message, array $context = []): void
     {
         $context['statsLog'] = true;
         $this->log(LogLevel::EMERGENCY, $message, $context);
@@ -196,7 +196,7 @@ class Logger extends AbstractLogger
     public static function flush(): void
     {
         foreach (self::$earlyLog as $msg) {
-            $this->:log($msg['level'], $msg['string'], $msg['statsLog']);
+            $this->log($msg['level'], $msg['string'], $msg['statsLog']);
         }
         self::$earlyLog = [];
     }
@@ -384,12 +384,13 @@ class Logger extends AbstractLogger
     /**
      * System is unusable.
      *
-     * @param string|\Stringable $message
+     * @param string $level
+     * @param string $message
      * @param array  $context
      *
      * @return void
      */
-    public function log(string|\Stringable $message, array $context = []): void
+    public function log($level, $message, array $context = []): void
     {
         $statsLog = false;
         if (array_key_exists('statsLog', $context)) {
@@ -398,7 +399,7 @@ class Logger extends AbstractLogger
 
         if (self::$initializing) {
             // some error occurred while initializing logging
-            self::defer($level, $string, $statsLog);
+            self::defer($level, $message, $statsLog);
             return;
         } elseif (php_sapi_name() === 'cli' || defined('STDIN')) {
             $_SERVER['REMOTE_ADDR'] = "CLI";
@@ -420,12 +421,12 @@ class Logger extends AbstractLogger
             $usec = substr($msecs, 2, 3);
 
             $ts = gmdate('H:i:s', $time) . '.' . $usec . 'Z';
-            self::$capturedLog[] = $ts . ' ' . $string;
+            self::$capturedLog[] = $ts . ' ' . $message;
         }
 
         if (self::$logLevel >= $level || $statsLog) {
             $formats = ['%trackid', '%msg', '%srcip', '%stat'];
-            $replacements = [self::$trackid, $string, $_SERVER['REMOTE_ADDR']];
+            $replacements = [self::$trackid, $message, $_SERVER['REMOTE_ADDR']];
 
             $stat = '';
             if ($statsLog) {
@@ -435,7 +436,7 @@ class Logger extends AbstractLogger
 
             if (self::$trackid === self::NO_TRACKID && !self::$shuttingDown) {
                 // we have a log without track ID and we are not still shutting down, so defer logging
-                self::defer($level, $string, $statsLog);
+                self::defer($level, $message, $statsLog);
                 return;
             } elseif (self::$trackid === self::NO_TRACKID) {
                 // shutting down without a track ID, prettify it
@@ -444,8 +445,8 @@ class Logger extends AbstractLogger
             }
 
             // we either have a track ID or we are shutting down, so just log the message
-            $string = str_replace($formats, $replacements, self::$format);
-            self::$loggingHandler->log($level, $string);
+            $message = str_replace($formats, $replacements, self::$format);
+            self::$loggingHandler->log($level, $message);
         }
     }
 }

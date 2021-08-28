@@ -89,6 +89,13 @@ abstract class UserPassBase extends Auth\Source
      */
     protected bool $rememberMeChecked = false;
 
+    /**
+     * The Logger to use
+     *
+     * @var \SimpleSAML\Logger
+     */
+    private Logger $logger;
+
 
     /**
      * Constructor for this authentication source.
@@ -122,6 +129,19 @@ abstract class UserPassBase extends Auth\Source
         $sspcnf = Configuration::getInstance();
         $this->rememberMeEnabled = $sspcnf->getBoolean('session.rememberme.enable', false);
         $this->rememberMeChecked = $sspcnf->getBoolean('session.rememberme.checked', false);
+
+        $this->logger = new Logger();
+    }
+
+
+    /**
+     * Set Logger.
+     *
+     * @param \SimpleSAML\Logger $logger  The Logger
+     */
+    public function setLogger(Logger $logger): void
+    {
+        $this->logger = $logger;
     }
 
 
@@ -219,7 +239,7 @@ abstract class UserPassBase extends Auth\Source
         // other use cases.
         if (isset($state['saml:Binding']) && $state['saml:Binding'] === Constants::BINDING_PAOS) {
             if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
-                Logger::error("ECP AuthnRequest did not contain Basic Authentication header");
+                $this->logger->error("ECP AuthnRequest did not contain Basic Authentication header");
                 // TODO Return a SOAP fault instead of using the current binding?
                 throw new Error\Error("WRONGUSERPASS");
             }
@@ -305,11 +325,11 @@ abstract class UserPassBase extends Auth\Source
         try {
             $attributes = $source->login($username, $password);
         } catch (\Exception $e) {
-            Logger::stats('Unsuccessful login attempt from ' . $_SERVER['REMOTE_ADDR'] . '.');
+            $this->logger->stats('Unsuccessful login attempt from ' . $_SERVER['REMOTE_ADDR'] . '.');
             throw $e;
         }
 
-        Logger::stats('User \'' . $username . '\' successfully authenticated from ' . $_SERVER['REMOTE_ADDR']);
+        $this->logger->stats('User \'' . $username . '\' successfully authenticated from ' . $_SERVER['REMOTE_ADDR']);
 
         // Save the attributes we received from the login-function in the $state-array
         $state['Attributes'] = $attributes;

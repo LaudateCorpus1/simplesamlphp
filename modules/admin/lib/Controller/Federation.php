@@ -36,6 +36,9 @@ class Federation
     /** @var \SimpleSAML\Configuration */
     protected Configuration $config;
 
+    /** @var \SimpleSAML\Logger */
+    protected Logger $logger;
+
     /**
      * @var \SimpleSAML\Auth\Source|string
      * @psalm-var \SimpleSAML\Auth\Source|class-string
@@ -63,6 +66,7 @@ class Federation
     public function __construct(Configuration $config)
     {
         $this->config = $config;
+        $this->logger = new Logger();
         $this->menu = new Menu();
         $this->mdHandler = MetaDataStorageHandler::getMetadataHandler();
         $this->authUtils = new Utils\Auth();
@@ -252,7 +256,7 @@ class Federation
                     $entities[$index] = $entity;
                 }
             } catch (\Exception $e) {
-                Logger::error('Federation: Error loading saml20-idp: ' . $e->getMessage());
+                $this->logger->error('Federation: Error loading saml20-idp: ' . $e->getMessage());
             }
         }
 
@@ -295,7 +299,7 @@ class Federation
                     $entities[$index] = $entity;
                 }
             } catch (\Exception $e) {
-                Logger::error('Federation: Error loading adfs-idp: ' . $e->getMessage());
+                $this->logger->error('Federation: Error loading adfs-idp: ' . $e->getMessage());
             }
         }
 

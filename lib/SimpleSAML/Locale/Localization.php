@@ -88,6 +88,13 @@ class Localization
      */
     public string $i18nBackend;
 
+    /**
+     * The Logger to use
+     *
+     * @var\SimpleSAML\Logger
+     */
+    private Logger $logger;
+
 
     /**
      * Constructor
@@ -97,6 +104,7 @@ class Localization
     public function __construct(Configuration $configuration)
     {
         $this->configuration = $configuration;
+        $this->logger = new Logger();
         /** @var string $locales */
         $locales = $this->configuration->resolvePath('locales');
         $this->localeDir = $locales;
@@ -160,7 +168,7 @@ class Localization
     public function addDomain(string $localeDir, string $domain): void
     {
         $this->localeDomainMap[$domain] = $localeDir;
-        Logger::debug("Localization: load domain '$domain' at '$localeDir'");
+        $this->logger->debug("Localization: load domain '$domain' at '$localeDir'");
         $this->loadGettextGettextFromPO($domain);
     }
 
@@ -179,7 +187,7 @@ class Localization
         $langcode = $langcode[0];
         $localeDir = $this->localeDomainMap[$domain];
         $langPath = $localeDir . '/' . $langcode . '/LC_MESSAGES/';
-        Logger::debug("Trying langpath for '$langcode' as '$langPath'");
+        $this->logger->debug("Trying langpath for '$langcode' as '$langPath'");
         if (is_dir($langPath) && is_readable($langPath)) {
             return $langPath;
         }
@@ -188,7 +196,7 @@ class Localization
         $alias = $this->language->getLanguageCodeAlias($langcode);
         if (isset($alias)) {
             $langPath = $localeDir . '/' . $alias . '/LC_MESSAGES/';
-            Logger::debug("Trying langpath for alternative '$alias' as '$langPath'");
+            $this->logger->debug("Trying langpath for alternative '$alias' as '$langPath'");
             if (is_dir($langPath) && is_readable($langPath)) {
                 return $langPath;
             }
@@ -201,13 +209,13 @@ class Localization
             // Report that the localization for the preferred language is missing
             $error = "Localization not found for langcode '$langcode' at '$langPath', falling back to langcode '" .
                 $defLangcode . "'";
-            Logger::error($_SERVER['PHP_SELF'] . ' - ' . $error);
+            $this->logger->error($_SERVER['PHP_SELF'] . ' - ' . $error);
             return $langPath;
         }
 
         // Locale for default language missing even, error out
         $error = "Localization directory missing/broken for langcode '$langcode' and domain '$domain'";
-        Logger::critical($_SERVER['PHP_SELF'] . ' - ' . $error);
+        $this->logger->critical($_SERVER['PHP_SELF'] . ' - ' . $error);
         throw new \Exception($error);
     }
 
@@ -241,7 +249,7 @@ class Localization
             $langPath = $this->getLangPath($domain);
         } catch (\Exception $e) {
             $error = "Something went wrong when trying to get path to language file, cannot load domain '$domain'.";
-            Logger::debug($_SERVER['PHP_SELF'] . ' - ' . $error);
+            $this->logger->debug($_SERVER['PHP_SELF'] . ' - ' . $error);
             if ($catchException) {
                 // bail out!
                 return;
@@ -256,7 +264,7 @@ class Localization
             $this->translator->loadTranslations($translations);
         } else {
             $error = "Localization file '$poFile' not found in '$langPath', falling back to default";
-            Logger::debug($_SERVER['PHP_SELF'] . ' - ' . $error);
+            $this->logger->debug($_SERVER['PHP_SELF'] . ' - ' . $error);
         }
     }
 
@@ -283,7 +291,7 @@ class Localization
     private function setupL10N(): void
     {
         if ($this->i18nBackend === self::SSP_I18N_BACKEND) {
-            Logger::debug("Localization: using old system");
+            $this->logger->debug("Localization: using old system");
             return;
         }
 

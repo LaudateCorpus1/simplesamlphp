@@ -46,6 +46,13 @@ class AttributeValueMap extends Auth\ProcessingFilter
      */
     private bool $replace = false;
 
+    /**
+     * The Logger to use
+     *
+     * @var \SimpleSAML\Logger
+     */
+    private Logger $logger;
+
 
     /**
      * Initialize the filter.
@@ -58,6 +65,8 @@ class AttributeValueMap extends Auth\ProcessingFilter
     {
         parent::__construct($config, $reserved);
 
+        $this->logger = new Logger();
+
         // parse configuration
         foreach ($config as $name => $value) {
             if (is_int($name)) {
@@ -68,7 +77,7 @@ class AttributeValueMap extends Auth\ProcessingFilter
                     $this->keep = true;
                 } else {
                     // unknown configuration option, log it and ignore the error
-                    Logger::warning(
+                    $this->logger->warning(
                         "AttributeValueMap: unknown configuration flag '" . var_export($value, true) . "'"
                     );
                 }
@@ -111,7 +120,7 @@ class AttributeValueMap extends Auth\ProcessingFilter
      */
     public function process(array &$state): void
     {
-        Logger::debug('Processing the AttributeValueMap filter.');
+        $this->logger->debug('Processing the AttributeValueMap filter.');
 
         Assert::keyExists($state, 'Attributes');
         $attributes = &$state['Attributes'];
@@ -130,7 +139,7 @@ class AttributeValueMap extends Auth\ProcessingFilter
                     $values = [$values];
                 }
                 if (count(array_intersect($values, $sourceattribute)) > 0) {
-                    Logger::debug("AttributeValueMap: intersect match for '$value'");
+                    $this->logger->debug("AttributeValueMap: intersect match for '$value'");
                     $targetvalues[] = $value;
                 }
             }

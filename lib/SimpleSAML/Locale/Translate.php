@@ -53,6 +53,13 @@ class Translate
      */
     private Language $language;
 
+    /**
+     * The Logger to use
+     *
+     * @var \SimpleSAML\Logger
+     */
+    private Logger $logger;
+
 
     /**
      * Constructor
@@ -65,6 +72,7 @@ class Translate
         $this->configuration = $configuration;
         $this->language = new Language($configuration);
         $this->defaultDictionary = $defaultDictionary;
+        $this->logger = new Logger();
     }
 
 
@@ -209,7 +217,7 @@ class Translate
             );
         }
 
-        Logger::debug('Translate: Adding inline language translation for tag [' . $tag . ']');
+        $this->logger->debug('Translate: Adding inline language translation for tag [' . $tag . ']');
         $this->langtext[$tag] = $translation;
     }
 
@@ -233,7 +241,7 @@ class Translate
         $filebase = $filebase ?: 'dictionaries/';
 
         $lang = $this->readDictionaryFile($filebase . $file);
-        Logger::debug('Translate: Merging language array. Loading [' . $file . ']');
+        $this->logger->debug('Translate: Merging language array. Loading [' . $file . ']');
         $this->langtext = array_merge($this->langtext, $lang);
     }
 
@@ -254,7 +262,7 @@ class Translate
         $lang = json_decode($fileContent, true);
 
         if (empty($lang)) {
-            Logger::error('Invalid dictionary definition file [' . $definitionFile . ']');
+            $this->logger->error('Invalid dictionary definition file [' . $definitionFile . ']');
             return [];
         }
 
@@ -303,7 +311,7 @@ class Translate
      */
     private function readDictionaryFile(string $filename): array
     {
-        Logger::debug('Translate: Reading dictionary [' . $filename . ']');
+        $this->logger->debug('Translate: Reading dictionary [' . $filename . ']');
 
         $jsonFile = $filename . '.definition.json';
         if (file_exists($jsonFile)) {
@@ -315,7 +323,7 @@ class Translate
             return $this->readDictionaryPHP($filename);
         }
 
-        Logger::error(
+        $this->logger->error(
             $_SERVER['PHP_SELF'] . ' - Translate: Could not find dictionary file at [' . $filename . ']'
         );
         return [];

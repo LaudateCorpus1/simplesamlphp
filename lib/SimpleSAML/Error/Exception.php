@@ -37,6 +37,13 @@ class Exception extends \Exception
      */
     private ?Exception $cause = null;
 
+    /**
+     * The Logger to use.
+     *
+     * @var \SimpleSAML\Logger
+     */
+    private Logger $logger;
+
 
     /**
      * Constructor for this error.
@@ -245,7 +252,7 @@ class Exception extends \Exception
      */
     public function logError(): void
     {
-        Logger::error($this->getClass() . ': ' . $this->getMessage());
+        $this->logger->error($this->getClass() . ': ' . $this->getMessage());
         $this->logBacktrace(LogLevel::ERROR);
     }
 
@@ -257,7 +264,7 @@ class Exception extends \Exception
      */
     public function logWarning(): void
     {
-        Logger::warning($this->getClass() . ': ' . $this->getMessage());
+        $this->logger->warning($this->getClass() . ': ' . $this->getMessage());
         $this->logBacktrace(LogLevel::WARNING);
     }
 
@@ -269,7 +276,7 @@ class Exception extends \Exception
      */
     public function logInfo(): void
     {
-        Logger::info($this->getClass() . ': ' . $this->getMessage());
+        $this->logger->info($this->getClass() . ': ' . $this->getMessage());
         $this->logBacktrace(LogLevel::INFO);
     }
 
@@ -281,7 +288,7 @@ class Exception extends \Exception
      */
     public function logDebug(): void
     {
-        Logger::debug($this->getClass() . ': ' . $this->getMessage());
+        $this->logger->debug($this->getClass() . ': ' . $this->getMessage());
         $this->logBacktrace(LogLevel::DEBUG);
     }
 

@@ -29,6 +29,13 @@ class AttributeLimit extends Auth\ProcessingFilter
      */
     private bool $isDefault = false;
 
+    /**
+     * The Logger to use
+     *
+     * @var \SimpleSAML\Logger
+     */
+    private Logger $logger;
+
 
     /**
      * Initialize this filter.
@@ -40,6 +47,8 @@ class AttributeLimit extends Auth\ProcessingFilter
     public function __construct(array &$config, $reserved)
     {
         parent::__construct($config, $reserved);
+
+        $this->logger = new Logger();
 
         foreach ($config as $index => $value) {
             if ($index === 'default') {
@@ -151,7 +160,7 @@ class AttributeLimit extends Auth\ProcessingFilter
                      */
                     $regexResult = @preg_match($pattern, $attributeValue);
                     if ($regexResult === false) {
-                        Logger::warning("Error processing regex '$pattern' on value '$attributeValue'");
+                        $this->logger->warning("Error processing regex '$pattern' on value '$attributeValue'");
                         break;
                     } elseif ($regexResult === 1) {
                         $matchedValues[] = $attributeValue;

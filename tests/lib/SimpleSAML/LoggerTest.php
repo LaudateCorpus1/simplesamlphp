@@ -18,13 +18,18 @@ class LoggerTest extends TestCase
      */
     protected $originalLogger;
 
+    /**
+     * @var \SimpleSAML\Logger
+     */
+    protected $logger;
+
 
     /**
      * @param string $handler
      */
     protected function setLoggingHandler(string $handler): void
     {
-        $this->originalLogger = Logger::getLoggingHandler();
+        $this->originalLogger = $this->logger::getLoggingHandler();
         $config = [
             'logging.handler' => $handler,
             'logging.level' => LogLevel::DEBUG
@@ -32,7 +37,15 @@ class LoggerTest extends TestCase
 
         // testing statics is slightly painful
         Configuration::loadFromArray($config, '[ARRAY]', 'simplesaml');
-        Logger::setLoggingHandler(null);
+        $this->logger::setLoggingHandler(null);
+    }
+
+
+    /**
+     */
+    protected function setUp(): void
+    {
+        $this->logger = new Logger();
     }
 
 
@@ -43,9 +56,9 @@ class LoggerTest extends TestCase
         if (isset($this->originalLogger)) {
             // reset the logger and Configuration
             Configuration::clearInternalState();
-            Logger::clearCapturedLog();
-            Logger::setLogLevel(LogLevel::INFO);
-            Logger::setLoggingHandler($this->originalLogger);
+            $this->logger::clearCapturedLog();
+            $this->logger::setLogLevel(LogLevel::INFO);
+            $this->logger::setLoggingHandler($this->originalLogger);
         }
     }
 
@@ -56,9 +69,9 @@ class LoggerTest extends TestCase
     {
         $this->setLoggingHandler(ArrayLogger::class);
 
-        Logger::critical('array logger');
+        $this->logger->critical('array logger');
 
-        $logger = Logger::getLoggingHandler();
+        $logger = $this->logger::getLoggingHandler();
 
         self::assertInstanceOf(ArrayLogger::class, $logger);
     }
@@ -71,14 +84,14 @@ class LoggerTest extends TestCase
         $this->setLoggingHandler(ArrayLogger::class);
 
         $payload = "catch this error";
-        Logger::setCaptureLog();
-        Logger::critical($payload);
+        $this->logger::setCaptureLog();
+        $this->logger->critical($payload);
 
         // turn logging off
-        Logger::setCaptureLog(false);
-        Logger::critical("do not catch this");
+        $this->logger::setCaptureLog(false);
+        $this->logger->critical("do not catch this");
 
-        $log = Logger::getCapturedLog();
+        $log = $this->logger::getCapturedLog();
         self::assertCount(1, $log);
         self::assertMatchesRegularExpression("/^[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z\ {$payload}$/", $log[0]);
     }
@@ -95,7 +108,7 @@ class LoggerTest extends TestCase
             "Invalid value for the 'logging.handler' configuration option. Unknown handler 'nohandler'."
         );
 
-        Logger::critical('should throw exception');
+        $this->logger->critical('should throw exception');
     }
 
 
@@ -126,9 +139,9 @@ class LoggerTest extends TestCase
     {
         $this->setLoggingHandler(ArrayLogger::class);
 
-        Logger::{$method}($payload = "test {$method}");
+        $this->logger->{$method}($payload = "test {$method}");
 
-        $logger = Logger::getLoggingHandler();
+        $logger = $this->logger::getLoggingHandler();
         self::assertMatchesRegularExpression("/\[CL[0-9a-f]{8}\]\ {$payload}$/", $logger->logs[$level][0]);
     }
 }

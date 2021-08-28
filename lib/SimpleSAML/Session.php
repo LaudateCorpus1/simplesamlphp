@@ -154,10 +154,11 @@ class Session implements Serializable, Utils\ClearableState
     private function __construct(bool $transient = false)
     {
         $this->setConfiguration(Configuration::getInstance());
+        $logger = new Logger();
 
         if (php_sapi_name() === 'cli' || defined('STDIN')) {
             $this->trackid = 'CL' . bin2hex(openssl_random_pseudo_bytes(4));
-            Logger::setTrackId($this->trackid);
+            $logger::setTrackId($this->trackid);
             $this->transient = $transient;
             return;
         }
@@ -165,7 +166,7 @@ class Session implements Serializable, Utils\ClearableState
         if ($transient) {
             // transient session
             $this->trackid = 'TR' . bin2hex(openssl_random_pseudo_bytes(4));
-            Logger::setTrackId($this->trackid);
+            $logger::setTrackId($this->trackid);
             $this->transient = true;
         } else {
             // regular session
@@ -175,7 +176,7 @@ class Session implements Serializable, Utils\ClearableState
 
 
             $this->trackid = bin2hex(openssl_random_pseudo_bytes(5));
-            Logger::setTrackId($this->trackid);
+            $logger::setTrackId($this->trackid);
 
             $this->markDirty();
 
@@ -257,6 +258,8 @@ class Session implements Serializable, Utils\ClearableState
      */
     public static function getSessionFromRequest(): Session
     {
+        $logger = new Logger();
+
         // check if we already have initialized the session
         /** @psalm-suppress RedundantCondition */
         if (self::$instance !== null) {
@@ -274,7 +277,7 @@ class Session implements Serializable, Utils\ClearableState
              * it.
              */
             self::useTransientSession();
-            Logger::error('Error loading session: ' . $e->getMessage());
+            $logger->error('Error loading session: ' . $e->getMessage());
             if ($e instanceof Error\Exception) {
                 $cause = $e->getCause();
                 if ($cause instanceof \Exception) {
@@ -316,7 +319,7 @@ class Session implements Serializable, Utils\ClearableState
                     $c->toArray()
                 );
             }
-            Logger::error('Error creating session: ' . $e->getMessage());
+            $logger->error('Error creating session: ' . $e->getMessage());
         }
 
         // we must have a session now, either regular or transient
@@ -358,6 +361,7 @@ class Session implements Serializable, Utils\ClearableState
 
         if ($checkToken) {
             $globalConfig = Configuration::getInstance();
+            $logger = new Logger();
 
             if ($session->authToken !== null) {
                 $authTokenCookieName = $globalConfig->getString(
@@ -365,12 +369,12 @@ class Session implements Serializable, Utils\ClearableState
                     'SimpleSAMLAuthToken'
                 );
                 if (!isset($_COOKIE[$authTokenCookieName])) {
-                    Logger::warning('Missing AuthToken cookie.');
+                    $logger->warning('Missing AuthToken cookie.');
                     return null;
                 }
                 $cryptoUtils = new Utils\Crypto();
                 if (!$cryptoUtils->secureCompare($session->authToken, $_COOKIE[$authTokenCookieName])) {
-                    Logger::warning('Invalid AuthToken cookie.');
+                    $logger->warning('Invalid AuthToken cookie.');
                     return null;
                 }
             }
@@ -380,7 +384,7 @@ class Session implements Serializable, Utils\ClearableState
             if (is_callable($checkFunction)) {
                 $check = call_user_func($checkFunction, $session);
                 if ($check !== true) {
-                    Logger::warning('Session did not pass check function.');
+                    $logger->warning('Session did not pass check function.');
                     return null;
                 }
             }
@@ -404,7 +408,8 @@ class Session implements Serializable, Utils\ClearableState
      */
     private static function load(Session $session): Session
     {
-        Logger::setTrackId($session->getTrackID());
+        $logger = new Logger();
+        $logger::setTrackId($session->getTrackID());
         self::$instance = $session;
         return self::$instance;
     }
@@ -463,14 +468,14 @@ class Session implements Serializable, Utils\ClearableState
         $this->callback_registered = false;
 
         $sh = SessionHandler::getSessionHandler();
-
+        $logger = new Logger();
         try {
             $sh->saveSession($this);
         } catch (\Exception $e) {
             if (!($e instanceof Error\Exception)) {
                 $e = new Error\UnserializableException($e);
             }
-            Logger::error('Unable to save session.');
+            $logger->error('Unable to save session.');
             $e->logError();
         }
     }
@@ -601,7 +606,8 @@ class Session implements Serializable, Utils\ClearableState
      */
     public function doLogin(string $authority, array $data = []): void
     {
-        Logger::debug('Session: doLogin("' . $authority . '")');
+        $logger = new Logger();
+        $logger->debug('Session: doLogin("' . $authority . '")');
 
         $this->markDirty();
 
@@ -677,7 +683,7 @@ class Session implements Serializable, Utils\ClearableState
                  */
                 unset($this->authToken);
                 unset($this->authData[$authority]);
-                Logger::error('Cannot set authentication token cookie: ' . $e->getMessage());
+                $logger->error('Cannot set authentication token cookie: ' . $e->getMessage());
                 throw $e;
             }
         }
@@ -693,10 +699,11 @@ class Session implements Serializable, Utils\ClearableState
      */
     public function doLogout(string $authority): void
     {
-        Logger::debug('Session: doLogout(' . var_export($authority, true) . ')');
+        $logger = new Logger();
+        $logger->debug('Session: doLogout(' . var_export($authority, true) . ')');
 
         if (!isset($this->authData[$authority])) {
-            Logger::debug('Session: Already logged out of ' . $authority . '.');
+            $logger->debug('Session: Already logged out of ' . $authority . '.');
             return;
         }
 
@@ -757,20 +764,20 @@ class Session implements Serializable, Utils\ClearableState
      */
     public function isValid(string $authority): bool
     {
+        $logger = new Logger();
         if (!isset($this->authData[$authority])) {
-            Logger::debug(
-                'Session: ' . var_export($authority, true) .
-                ' not valid because we are not authenticated.'
+            $logger->debug(
+                'Session: ' . var_export($authority, true) . ' not valid because we are not authenticated.'
             );
             return false;
         }
 
         if ($this->authData[$authority]['Expire'] <= time()) {
-            Logger::debug('Session: ' . var_export($authority, true) . ' not valid because it is expired.');
+            $logger->debug('Session: ' . var_export($authority, true) . ' not valid because it is expired.');
             return false;
         }
 
-        Logger::debug('Session: Valid session found with ' . var_export($authority, true) . '.');
+        $logger->debug('Session: Valid session found with ' . var_export($authority, true) . '.');
 
         return true;
     }

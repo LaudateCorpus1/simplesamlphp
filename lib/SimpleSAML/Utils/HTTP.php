@@ -19,6 +19,23 @@ use SimpleSAML\XHTML\Template;
 class HTTP
 {
     /**
+     * The Logger to use.
+     *
+     * @var \SimpleSAML\Logger
+     */
+    private Logger $logger;
+
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->logger = new Logger();
+    }
+
+
+    /**
      * Determine if the user agent can support cookies being sent with SameSite equal to "None".
      * Browsers without support may drop the cookie and or treat it as stricter setting
      * Browsers with support may have additional requirements on setting it on non-secure websites.
@@ -239,7 +256,7 @@ class HTTP
         }
 
         if (strlen($url) > 2048) {
-            Logger::warning('Redirecting to a URL longer than 2048 bytes.');
+            $this->logger->warning('Redirecting to a URL longer than 2048 bytes.');
         }
 
         if (!headers_sent()) {
@@ -501,7 +518,7 @@ class HTTP
                         'SNI_enabled'     => true,
                     ];
                 } else {
-                    Logger::warning('Invalid URL format or local URL used through a proxy');
+                    $this->logger->warning('Invalid URL format or local URL used through a proxy');
                 }
             }
         }
@@ -1134,7 +1151,7 @@ class HTTP
                     Error\CannotSetCookie::SECURE_COOKIE
                 );
             }
-            Logger::warning('Error setting cookie: setting secure cookie on plain HTTP is not allowed.');
+            $this->logger->warning('Error setting cookie: setting secure cookie on plain HTTP is not allowed.');
             return;
         }
 
@@ -1186,7 +1203,7 @@ class HTTP
                     Error\CannotSetCookie::HEADERS_SENT
                 );
             }
-            Logger::warning('Error setting cookie: headers already sent.');
+            $this->logger->warning('Error setting cookie: headers already sent.');
         }
     }
 

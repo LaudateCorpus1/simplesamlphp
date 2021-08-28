@@ -148,6 +148,7 @@ class MetaDataStorageHandler implements ClearableState
     {
         $result = [];
         $timeUtils = new Utils\Time();
+        $logger = new Logger();
 
         foreach ($this->sources as $source) {
             $srcList = $source->getMetadataSet($set);
@@ -156,7 +157,7 @@ class MetaDataStorageHandler implements ClearableState
                 foreach ($srcList as $key => $le) {
                     if (array_key_exists('expire', $le) && ($le['expire'] < time())) {
                         unset($srcList[$key]);
-                        Logger::warning(
+                        $this->logger->warning(
                             "Dropping metadata entity " . var_export($key, true) . ", expired " .
                             $timeUtils->generateTimestamp($le['expire']) . "."
                         );
@@ -270,6 +271,7 @@ class MetaDataStorageHandler implements ClearableState
     public function getMetaDataForEntities(array $entityIds, string $set): array
     {
         $result = [];
+        $logger = new Logger();
         $timeUtils = new Utils\Time();
         foreach ($this->sources as $source) {
             $srcList = $source->getMetaDataForEntities($entityIds, $set);
@@ -277,7 +279,7 @@ class MetaDataStorageHandler implements ClearableState
                 if (array_key_exists('expire', $le)) {
                     if ($le['expire'] < time()) {
                         unset($srcList[$key]);
-                        Logger::warning(
+                        $logger->warning(
                             "Dropping metadata entity " . var_export($key, true) . ", expired " .
                             $timeUtils->generateTimestamp($le['expire']) . "."
                         );

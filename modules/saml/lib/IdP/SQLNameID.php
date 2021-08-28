@@ -8,6 +8,7 @@ use PDO;
 use PDOStatement;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Error;
+use SimpleSAML\Logger;
 use SimpleSAML\Store;
 use SimpleSAML\Database;
 use SimpleSAML\Configuration;
@@ -90,7 +91,8 @@ class SQLNameID
             try {
                 self::createTable($table, $config);
             } catch (\Exception $e) {
-                \SimpleSAML\Logger::debug('SQL persistent NameID table already exists.');
+                $logger = new Logger();
+                $logger->debug('SQL persistent NameID table already exists.');
             }
         } elseif ($store->getTableVersion('saml_PersistentNameID') !== self::TABLE_VERSION) {
             self::createTable($table);
