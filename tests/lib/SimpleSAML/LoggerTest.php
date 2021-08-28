@@ -6,6 +6,7 @@ namespace SimpleSAML\Test;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\InvalidArgumentException;
 use Psr\Log\LogLevel;
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
@@ -144,5 +145,14 @@ class LoggerTest extends TestCase
         /** @psalm-var \SimpleSAML\Test\Utils\ArrayLogger $logger */
         $logger = $this->logger::getLoggingHandler();
         self::assertMatchesRegularExpression("/\[CL[0-9a-f]{8}\]\ {$payload}$/", $logger->logs[$level][0]);
+    }
+
+
+    /**
+     */
+    public function testInvalidLogLevelThrowsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->logger->log('bogus', 'array logger', []);
     }
 }

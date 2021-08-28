@@ -6,6 +6,7 @@ namespace SimpleSAML;
 
 use Exception;
 use Psr\Log\AbstractLogger;
+use Psr\Log\InvalidArgumentException;
 use Psr\Log\LogLevel;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Logger\ErrorLogLoggingHandler;
@@ -131,6 +132,16 @@ class Logger extends AbstractLogger
      */
     private static bool $shuttingDown = false;
 
+    public static array $logLevels = [
+        LogLevel::EMERGENCY,
+        LogLevel::ALERT,
+        LogLevel::CRITICAL,
+        LogLevel::ERROR,
+        LogLevel::WARNING,
+        LogLevel::NOTICE,
+        LogLevel::INFO,
+        LogLevel::DEBUG,
+    ];
 
     /**
      * Statistics.
@@ -394,6 +405,8 @@ class Logger extends AbstractLogger
      */
     public function log($level, $message, array $context = []): void
     {
+        Assert::oneOf($level, self::$logLevels, InvalidArgumentException::class);
+
         $statsLog = false;
         if (array_key_exists('statsLog', $context)) {
             $statsLog = boolval($context['statsLog']);
