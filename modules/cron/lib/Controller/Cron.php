@@ -37,6 +37,9 @@ class Cron
     /** @var \SimpleSAML\Session */
     protected Session $session;
 
+    /** @var \SimpleSAML\Logger */
+    protected Logger $logger;
+
     /**
      * @var \SimpleSAML\Utils\Auth
      */
@@ -58,6 +61,7 @@ class Cron
         Session $session
     ) {
         $this->config = $config;
+        $this->logger = new Logger();
         $this->cronconfig = Configuration::getConfig('module_cron.php');
         $this->session = $session;
         $this->authUtils = new Utils\Auth();
@@ -129,13 +133,13 @@ class Cron
     {
         $configKey = $this->cronconfig->getValue('key', 'secret');
         if ($key !== $configKey) {
-            Logger::error('Cron - Wrong key provided. Cron will not run.');
+            $this->logger->error('Cron - Wrong key provided. Cron will not run.');
             exit;
         }
 
         $cron = new \SimpleSAML\Module\cron\Cron();
         if (!$cron->isValidTag($tag)) {
-            Logger::error('Cron - Illegal tag [' . $tag . '].');
+            $this->logger->error('Cron - Illegal tag [' . $tag . '].');
             exit;
         }
 
@@ -152,7 +156,7 @@ class Cron
             try {
                 $mail->send();
             } catch (PHPMailerException $e) {
-                Logger::warning("Unable to send cron report; " . $e->getMessage());
+                $this->logger->warning("Unable to send cron report; " . $e->getMessage());
             }
         }
 

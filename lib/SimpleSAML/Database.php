@@ -96,9 +96,10 @@ class Database
             $driverOptions
         );
 
+        $logger = new Logger();
         // TODO: deprecated: the "database.slave" terminology is preserved here for backwards compatibility.
         if ($config->getArray('database.slaves', null) !== null) {
-            Logger::warning(
+            $logger->warning(
                 'The "database.slaves" config option is deprecated. ' .
                 'Please update your configuration to use "database.secondaries".'
             );

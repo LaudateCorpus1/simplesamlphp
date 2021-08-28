@@ -383,7 +383,8 @@ abstract class Source
 
         $session = Session::getSessionFromRequest();
         if (!$session->isValid($source)) {
-            Logger::warning(
+            $logger = new Logger();
+            $logger->warning(
                 'Received logout from an invalid authentication source ' .
                 var_export($source, true)
             );

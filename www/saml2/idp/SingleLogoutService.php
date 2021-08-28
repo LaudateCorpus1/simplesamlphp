@@ -19,7 +19,8 @@ use SimpleSAML\Metadata;
 use SimpleSAML\Module;
 use SimpleSAML\Utils;
 
-Logger::info('SAML2.0 - IdP.SingleLogoutService: Accessing SAML 2.0 IdP endpoint SingleLogoutService');
+$logger = new Logger();
+$logger->info('SAML2.0 - IdP.SingleLogoutService: Accessing SAML 2.0 IdP endpoint SingleLogoutService');
 
 $config = Configuration::getInstance();
 if (!$config->getBoolean('enable.saml20-idp', false) || !Module::isModuleEnabled('saml')) {

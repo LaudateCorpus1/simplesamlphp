@@ -22,15 +22,14 @@ class StatisticsWithAttribute extends Auth\ProcessingFilter
      */
     private ?string $attribute = null;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private string $typeTag = 'saml20-idp-SSO';
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private bool $skipPassive = false;
+
+    /** @var \SimpleSAML\Logger */
+    private Logger $logger;
 
 
     /**
@@ -42,6 +41,7 @@ class StatisticsWithAttribute extends Auth\ProcessingFilter
     public function __construct(array &$config, $reserved)
     {
         parent::__construct($config, $reserved);
+        $this->logger = new Logger();
 
         if (array_key_exists('attributename', $config)) {
             $this->attribute = $config['attributename'];
@@ -92,10 +92,10 @@ class StatisticsWithAttribute extends Auth\ProcessingFilter
 
         if (!array_key_exists('PreviousSSOTimestamp', $state)) {
             // The user hasn't authenticated with this SP earlier in this session
-            Logger::stats($isPassive . $this->typeTag . '-first ' . $dest . ' ' . $source . ' ' . $logAttribute);
+            $this->logger->stats($isPassive . $this->typeTag . '-first ' . $dest . ' ' . $source . ' ' . $logAttribute);
         }
 
-        Logger::stats($isPassive . $this->typeTag . ' ' . $dest . ' ' . $source . ' ' . $logAttribute);
+        $this->logger->stats($isPassive . $this->typeTag . ' ' . $dest . ' ' . $source . ' ' . $logAttribute);
     }
 
 

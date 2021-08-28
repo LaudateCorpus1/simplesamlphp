@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SimpleSAML;
 
+use Exception;
 use SimpleSAML\Utils;
 
 /**
@@ -41,7 +42,8 @@ class Memcache
      */
     public static function get(string $key)
     {
-        Logger::debug("loading key $key from memcache");
+        $logger = new Logger();
+        $logger->debug("loading key $key from memcache");
 
         $latestInfo = null;
         $latestTime = 0.0;
@@ -73,19 +75,19 @@ class Memcache
              * - 'data': The data.
              */
             if (!is_array($info)) {
-                Logger::warning(
+                $logger->warning(
                     'Retrieved invalid data from a memcache server. Data was not an array.'
                 );
                 continue;
             }
             if (!array_key_exists('timestamp', $info)) {
-                Logger::warning(
+                $logger->warning(
                     'Retrieved invalid data from a memcache server. Missing timestamp.'
                 );
                 continue;
             }
             if (!array_key_exists('data', $info)) {
-                Logger::warning(
+                $logger->warning(
                     'Retrieved invalid data from a memcache server. Missing data.'
                 );
                 continue;
@@ -122,13 +124,13 @@ class Memcache
                 throw new Error\Exception('All memcache servers are down', 503, $e);
             }
             // we didn't find any data matching the key
-            Logger::debug("key $key not found in memcache");
+            $logger->debug("key $key not found in memcache");
             return null;
         }
 
         if ($mustUpdate) {
             // we found data matching the key, but some of the servers need updating
-            Logger::debug("Memcache servers out of sync for $key, forcing sync");
+            $logger->debug("Memcache servers out of sync for $key, forcing sync");
             self::set($key, $latestData);
         }
 
@@ -145,7 +147,8 @@ class Memcache
      */
     public static function set(string $key, $value, ?int $expire = null): void
     {
-        Logger::debug("saving key $key to memcache");
+        $logger = new Logger();
+        $logger->debug("saving key $key to memcache");
         $savedInfo = [
             'timestamp' => microtime(true),
             'data'      => $value
@@ -171,7 +174,8 @@ class Memcache
      */
     public static function delete(string $key): void
     {
-        Logger::debug("deleting key $key from memcache");
+        $logger = new Logger();
+        $logger->debug("deleting key $key from memcache");
 
         // store this object to all groups of memcache servers
         foreach (self::getMemcacheServers() as $server) {
@@ -207,7 +211,7 @@ class Memcache
     {
         // the hostname option is required
         if (!array_key_exists('hostname', $server)) {
-            throw new \Exception(
+            throw new Exception(
                 "hostname setting missing from server in the 'memcache_store.servers' configuration option."
             );
         }
@@ -216,7 +220,7 @@ class Memcache
 
         // the hostname must be a valid string
         if (!is_string($hostname)) {
-            throw new \Exception(
+            throw new Exception(
                 "Invalid hostname for server in the 'memcache_store.servers' configuration option. The hostname is" .
                 ' supposed to be a string.'
             );
@@ -230,7 +234,7 @@ class Memcache
             // get the port number from the array, and validate it
             $port = (int) $server['port'];
             if (($port <= 0) || ($port > 65535)) {
-                throw new \Exception(
+                throw new Exception(
                     "Invalid port for server in the 'memcache_store.servers' configuration option. The port number" .
                     ' is supposed to be an integer between 0 and 65535.'
                 );
@@ -282,7 +286,7 @@ class Memcache
         foreach ($group as $index => $server) {
             // make sure that we don't have an index. An index would be a sign of invalid configuration
             if (!is_int($index)) {
-                throw new \Exception(
+                throw new Exception(
                     "Invalid index on element in the 'memcache_store.servers' configuration option. Perhaps you" .
                     ' have forgotten to add an array(...) around one of the server groups? The invalid index was: ' .
                     $index
@@ -291,7 +295,7 @@ class Memcache
 
             // make sure that the server object is an array. Each server is an array with name-value pairs
             if (!is_array($server)) {
-                throw new \Exception(
+                throw new Exception(
                     'Invalid value for the server with index ' . $index .
                     '. Remeber that the \'memcache_store.servers\' configuration option' .
                     ' contains an array of arrays of arrays.'
@@ -337,7 +341,7 @@ class Memcache
              * an array of name => value pairs for that server.
              */
             if (!is_array($group)) {
-                throw new \Exception(
+                throw new Exception(
                     "Invalid value for the server with index " . $index .
                     ". Remeber that the 'memcache_store.servers' configuration option" .
                     ' contains an array of arrays of arrays.'
@@ -379,7 +383,7 @@ class Memcache
 
         // it must be a positive integer
         if ($expire < 0) {
-            throw new \Exception(
+            throw new Exception(
                 "The value of 'memcache_store.expires' in the configuration can't be a negative integer."
             );
         }
@@ -413,7 +417,7 @@ class Memcache
             $stats = $sg->getStats();
             foreach ($stats as $server => $data) {
                 if ($data === false) {
-                    throw new \Exception('Failed to get memcache server status.');
+                    throw new Exception('Failed to get memcache server status.');
                 }
             }
 

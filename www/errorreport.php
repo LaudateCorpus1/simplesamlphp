@@ -22,11 +22,12 @@ if (!preg_match('/^[0-9a-f]{8}$/', $reportId)) {
 }
 
 $data = null;
+$logger = new \SimpleSAML\Logger();
 try {
     $session = \SimpleSAML\Session::getSessionFromRequest();
     $data = $session->getData('core:errorreport', $reportId);
 } catch (\Exception $e) {
-    \SimpleSAML\Logger::error('Error loading error report data: ' . var_export($e->getMessage(), true));
+    $logger->error('Error loading error report data: ' . var_export($e->getMessage(), true));
 }
 
 if ($data === null) {
@@ -54,7 +55,7 @@ if ($config->getBoolean('errorreporting', true)) {
     $mail->addReplyTo($email);
     $mail->setText($text);
     $mail->send();
-    SimpleSAML\Logger::error('Report with id ' . $reportId . ' sent');
+    $logger->error('Report with id ' . $reportId . ' sent');
 }
 
 // redirect the user back to this page to clear the POST request

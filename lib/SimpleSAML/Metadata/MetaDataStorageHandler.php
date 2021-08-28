@@ -157,7 +157,7 @@ class MetaDataStorageHandler implements ClearableState
                 foreach ($srcList as $key => $le) {
                     if (array_key_exists('expire', $le) && ($le['expire'] < time())) {
                         unset($srcList[$key]);
-                        $this->logger->warning(
+                        $logger->warning(
                             "Dropping metadata entity " . var_export($key, true) . ", expired " .
                             $timeUtils->generateTimestamp($le['expire']) . "."
                         );

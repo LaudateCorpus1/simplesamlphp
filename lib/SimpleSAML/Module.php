@@ -250,9 +250,10 @@ class Module
             throw new Error\NotFound('Directory listing not available.');
         }
 
+        $logger = new Logger();
         if (!file_exists($path)) {
             // file not found
-            Logger::info('Could not find file \'' . $path . '\'.');
+            $logger->info('Could not find file \'' . $path . '\'.');
             throw new Error\NotFound('The URL wasn\'t found in the module.');
         }
 
@@ -292,7 +293,7 @@ class Module
                 $contentType = mime_content_type($path);
             } else {
                 // mime_content_type doesn't exist. Return a default MIME type
-                Logger::warning('Unable to determine mime content type of file: ' . $path);
+                $logger->warning('Unable to determine mime content type of file: ' . $path);
                 $contentType = 'application/octet-stream';
             }
         }

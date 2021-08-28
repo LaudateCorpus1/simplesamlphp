@@ -38,6 +38,9 @@ class CardinalitySingle extends Auth\ProcessingFilter
     /** @var \SimpleSAML\Utils\HTTP */
     private Utils\HTTP $httpUtils;
 
+    /** @var \SimpleSAML\Logger */
+    private Logger $logger;
+
 
     /**
      * Initialize this filter, parse configuration.
@@ -50,6 +53,7 @@ class CardinalitySingle extends Auth\ProcessingFilter
     {
         parent::__construct($config, $reserved);
 
+        $this->logger = new Logger();
         $this->httpUtils = $httpUtils ?: new Utils\HTTP();
 
         if (array_key_exists('singleValued', $config)) {
@@ -92,7 +96,7 @@ class CardinalitySingle extends Auth\ProcessingFilter
             && array_key_exists('entityid', $state['Source'])
             && in_array($state['Source']['entityid'], $this->ignoreEntities, true)
         ) {
-            Logger::debug('CardinalitySingle: Ignoring assertions from ' . $state['Source']['entityid']);
+            $this->logger->debug('CardinalitySingle: Ignoring assertions from ' . $state['Source']['entityid']);
             return;
         }
 

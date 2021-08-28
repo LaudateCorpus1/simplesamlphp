@@ -19,7 +19,8 @@ use SimpleSAML\Logger;
 use SimpleSAML\Metadata;
 use SimpleSAML\Module;
 
-Logger::info('SAML2.0 - IdP.SSOService: Accessing SAML 2.0 IdP endpoint SSOService');
+$logger = new Logger();
+$logger->info('SAML2.0 - IdP.SSOService: Accessing SAML 2.0 IdP endpoint SSOService');
 
 $config = Configuration::getInstance();
 if (!$config->getBoolean('enable.saml20-idp', false) || !Module::isModuleEnabled('saml')) {

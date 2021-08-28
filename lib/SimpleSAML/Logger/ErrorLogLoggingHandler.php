@@ -18,7 +18,7 @@ class ErrorLogLoggingHandler implements LoggingHandlerInterface
     /**
      * This array contains the mappings from syslog log level to names.
      *
-     * @var array<string, string>
+     * @var string[]
      */
     private static array $levelNames = [
         LogLevel::EMERGENCY,

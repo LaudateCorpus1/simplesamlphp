@@ -141,6 +141,7 @@ class LoggerTest extends TestCase
 
         $this->logger->{$method}($payload = "test {$method}");
 
+        /** @psalm-var \SimpleSAML\Test\Utils\ArrayLogger $logger */
         $logger = $this->logger::getLoggingHandler();
         self::assertMatchesRegularExpression("/\[CL[0-9a-f]{8}\]\ {$payload}$/", $logger->logs[$level][0]);
     }

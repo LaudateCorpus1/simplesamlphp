@@ -22,6 +22,9 @@ class GenerateGroups extends Auth\ProcessingFilter
      */
     private array $generateGroupsFrom;
 
+    /** @var \SimpleSAML\Logger */
+    private Logger $logger;
+
 
     /**
      * Initialize this filter.
@@ -32,6 +35,7 @@ class GenerateGroups extends Auth\ProcessingFilter
     public function __construct(array &$config, $reserved)
     {
         parent::__construct($config, $reserved);
+        $this->logger = new Logger();
 
         if (count($config) === 0) {
             // Use default groups
@@ -72,7 +76,7 @@ class GenerateGroups extends Auth\ProcessingFilter
 
         foreach ($this->generateGroupsFrom as $name) {
             if (!array_key_exists($name, $attributes)) {
-                Logger::debug('GenerateGroups - attribute \'' . $name . '\' not found.');
+                $this->logger->debug('GenerateGroups - attribute \'' . $name . '\' not found.');
                 // Attribute not present
                 continue;
             }

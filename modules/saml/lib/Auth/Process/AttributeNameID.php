@@ -57,15 +57,17 @@ class AttributeNameID extends BaseNameIDGenerator
      */
     protected function getValue(array &$state): ?string
     {
+        $logger = new Logger();
+
         if (!isset($state['Attributes'][$this->attribute]) || count($state['Attributes'][$this->attribute]) === 0) {
-            Logger::warning(
+            $logger->warning(
                 'Missing attribute ' . var_export($this->attribute, true) .
                 ' on user - not generating attribute NameID.'
             );
             return null;
         }
         if (count($state['Attributes'][$this->attribute]) > 1) {
-            Logger::warning(
+            $logger->warning(
                 'More than one value in attribute ' . var_export($this->attribute, true) .
                 ' on user - not generating attribute NameID.'
             );
@@ -75,7 +77,7 @@ class AttributeNameID extends BaseNameIDGenerator
         $value = strval($value[0]);
 
         if (empty($value)) {
-            Logger::warning(
+            $logger->warning(
                 'Empty value in attribute ' . var_export($this->attribute, true) .
                 ' on user - not generating attribute NameID.'
             );

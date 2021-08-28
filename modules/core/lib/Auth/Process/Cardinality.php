@@ -27,6 +27,9 @@ class Cardinality extends Auth\ProcessingFilter
     /** @var \SimpleSAML\Utils\HTTP */
     private Utils\HTTP $httpUtils;
 
+    /** @var \SimpleSAML\Logger */
+    private Logger $logger;
+
 
     /**
      * Initialize this filter, parse configuration.
@@ -40,6 +43,7 @@ class Cardinality extends Auth\ProcessingFilter
     {
         parent::__construct($config, $reserved);
 
+        $this->logger = new Logger();
         $this->httpUtils = $httpUtils ?: new Utils\HTTP();
 
         foreach ($config as $attribute => $rules) {
@@ -117,7 +121,7 @@ class Cardinality extends Auth\ProcessingFilter
             $entityid = $state['Source']['entityid'];
         }
         if (in_array($entityid, $this->ignoreEntities, true)) {
-            Logger::debug('Cardinality: Ignoring assertions from ' . $entityid);
+            $this->logger->debug('Cardinality: Ignoring assertions from ' . $entityid);
             return;
         }
 
@@ -132,7 +136,7 @@ class Cardinality extends Auth\ProcessingFilter
             /* minimum cardinality */
             if (count($v) < $this->cardinality[$k]['min']) {
                 if ($this->cardinality[$k]['warn']) {
-                    Logger::warning(
+                    $this->logger->warning(
                         sprintf(
                             'Cardinality: attribute %s from %s does not meet minimum cardinality of %d (%d)',
                             $k,
@@ -153,7 +157,7 @@ class Cardinality extends Auth\ProcessingFilter
             /* maximum cardinality */
             if (array_key_exists('max', $this->cardinality[$k]) && count($v) > $this->cardinality[$k]['max']) {
                 if ($this->cardinality[$k]['warn']) {
-                    Logger::warning(
+                    $this->logger->warning(
                         sprintf(
                             'Cardinality: attribute %s from %s does not meet maximum cardinality of %d (%d)',
                             $k,
@@ -178,7 +182,7 @@ class Cardinality extends Auth\ProcessingFilter
                 continue;
             }
             if ($this->cardinality[$k]['warn']) {
-                Logger::warning(sprintf(
+                $this->logger->warning(sprintf(
                     'Cardinality: attribute %s from %s is missing',
                     $k,
                     $entityid

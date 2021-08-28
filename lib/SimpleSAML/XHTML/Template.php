@@ -31,6 +31,9 @@ use Twig\TwigFunction;
  */
 class Template extends Response
 {
+    /** @var \SimpleSAML\Logger */
+    private Logger $logger;
+
     /**
      * The data associated with this template, accessible within the template itself.
      *
@@ -120,6 +123,7 @@ class Template extends Response
     public function __construct(Configuration $configuration, string $template, string $defaultDictionary = null)
     {
         $this->configuration = $configuration;
+        $this->logger = new Logger();
         $this->template = $template;
         // TODO: do not remove the slash from the beginning, change the templates instead!
         $this->data['baseurlpath'] = ltrim($this->configuration->getBasePath(), '/');
@@ -355,7 +359,7 @@ class Template extends Response
         if (empty($subdirs)) {
             // no subdirectories in the theme directory, nothing to do here
             // this is probably wrong, log a message
-            Logger::warning('Empty theme directory for theme "' . $this->theme['name'] . '".');
+            $this->logger->warning('Empty theme directory for theme "' . $this->theme['name'] . '".');
             return [];
         }
 

@@ -10,13 +10,14 @@ $idp = \SimpleSAML\IdP::getByState($state);
 
 $associations = $idp->getAssociations();
 
+$logger = new \SimpleSAML\Logger();
 if (!isset($_REQUEST['cancel'])) {
-    \SimpleSAML\Logger::stats('slo-iframe done');
+    $logger->stats('slo-iframe done');
     \SimpleSAML\Stats::log('core:idp:logout-iframe:page', ['type' => 'done']);
     $SPs = $state['core:Logout-IFrame:Associations'];
 } else {
     // user skipped global logout
-    \SimpleSAML\Logger::stats('slo-iframe skip');
+    $logger->stats('slo-iframe skip');
     \SimpleSAML\Stats::log('core:idp:logout-iframe:page', ['type' => 'skip']);
     $SPs = []; // no SPs should have been logged out
     $state['core:Failed'] = true; // mark as partial logout
@@ -44,13 +45,13 @@ foreach ($SPs as $assocId => $sp) {
     if ($sp['core:Logout-IFrame:State'] === 'completed') {
         $idp->terminateAssociation($assocId);
     } else {
-        \SimpleSAML\Logger::warning('Unable to terminate association with ' . var_export($assocId, true) . '.');
+        $logger->warning('Unable to terminate association with ' . var_export($assocId, true) . '.');
         if (isset($sp['saml:entityID'])) {
             $spId = $sp['saml:entityID'];
         } else {
             $spId = $assocId;
         }
-        \SimpleSAML\Logger::stats('slo-iframe-fail ' . $spId);
+        $logger->stats('slo-iframe-fail ' . $spId);
         \SimpleSAML\Stats::log('core:idp:logout-iframe:spfail', ['sp' => $spId]);
         $state['core:Failed'] = true;
     }

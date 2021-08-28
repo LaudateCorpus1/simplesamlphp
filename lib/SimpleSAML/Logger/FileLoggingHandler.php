@@ -27,7 +27,7 @@ class FileLoggingHandler implements LoggingHandlerInterface
      * This array contains the mappings from syslog log levels to names. Copied more or less directly from
      * SimpleSAML\Logger\ErrorLogLoggingHandler.
      *
-     * @var array<string, string>
+     * @var string[]
      */
     private static $levelNames = [
         LogLevel::EMERGENCY,

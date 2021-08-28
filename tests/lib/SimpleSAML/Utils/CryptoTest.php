@@ -24,6 +24,9 @@ class CryptoTest extends TestCase
 
     private const DEFAULTCERTDIR = 'certdir';
 
+    /** @var \SimpleSAML\Configuration */
+    protected Configuration $config;
+
     /** @var \org\bovigo\vfs\vfsStreamDirectory */
     protected VfsStreamDirectory $root;
 

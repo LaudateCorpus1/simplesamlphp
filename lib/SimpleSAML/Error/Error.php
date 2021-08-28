@@ -184,7 +184,8 @@ class Error extends Exception
         $etrace = implode("\n", $data);
 
         $reportId = bin2hex(openssl_random_pseudo_bytes(4));
-        Logger::error('Error report with id ' . $reportId . ' generated.');
+        $logger = new Logger();
+        $logger->error('Error report with id ' . $reportId . ' generated.');
 
         $config = Configuration::getInstance();
         $session = Session::getSessionFromRequest();

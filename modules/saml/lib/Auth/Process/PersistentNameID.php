@@ -56,27 +56,29 @@ class PersistentNameID extends BaseNameIDGenerator
      */
     protected function getValue(array &$state): ?string
     {
+        $logger = new Logger();
+
         if (!isset($state['Destination']['entityid'])) {
-            Logger::warning('No SP entity ID - not generating persistent NameID.');
+            $logger->warning('No SP entity ID - not generating persistent NameID.');
             return null;
         }
         $spEntityId = $state['Destination']['entityid'];
 
         if (!isset($state['Source']['entityid'])) {
-            Logger::warning('No IdP entity ID - not generating persistent NameID.');
+            $logger->warning('No IdP entity ID - not generating persistent NameID.');
             return null;
         }
         $idpEntityId = $state['Source']['entityid'];
 
         if (!isset($state['Attributes'][$this->attribute]) || count($state['Attributes'][$this->attribute]) === 0) {
-            Logger::warning(
+            $logger->warning(
                 'Missing attribute ' . var_export($this->attribute, true) .
                 ' on user - not generating persistent NameID.'
             );
             return null;
         }
         if (count($state['Attributes'][$this->attribute]) > 1) {
-            Logger::warning(
+            $logger->warning(
                 'More than one value in attribute ' . var_export($this->attribute, true) .
                 ' on user - not generating persistent NameID.'
             );
@@ -86,7 +88,7 @@ class PersistentNameID extends BaseNameIDGenerator
         $uid = $uid[0];
 
         if (empty($uid)) {
-            Logger::warning(
+            $logger->warning(
                 'Empty value in attribute ' . var_export($this->attribute, true) .
                 ' on user - not generating persistent NameID.'
             );

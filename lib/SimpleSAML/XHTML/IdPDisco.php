@@ -52,6 +52,11 @@ class IdPDisco
     protected Session $session;
 
     /**
+     * @var \SimpleSAML\Logger
+     */
+    protected Logger $logger;
+
+    /**
      * The metadata sets we find allowed entities in, in prioritized order.
      *
      * @var array
@@ -119,6 +124,7 @@ class IdPDisco
     {
         // initialize standard classes
         $this->config = Configuration::getInstance();
+        $this->logger = new Logger();
         $this->metadata = MetaDataStorageHandler::getMetadataHandler();
         $this->session = Session::getSessionFromRequest();
         $this->instance = $instance;
@@ -176,7 +182,7 @@ class IdPDisco
      */
     protected function log(string $message): void
     {
-        Logger::info('idpDisco.' . $this->instance . ': ' . $message);
+        $this->logger->info('idpDisco.' . $this->instance . ': ' . $message);
     }
 
 

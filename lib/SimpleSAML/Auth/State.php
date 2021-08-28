@@ -238,9 +238,9 @@ class State
             $clonedState[self::CLONE_ORIGINAL_ID] = $state[self::ID];
             unset($clonedState[self::ID]);
 
-            $this->logger->debug('Cloned state: ' . var_export($state[self::ID], true));
+            $logger->debug('Cloned state: ' . var_export($state[self::ID], true));
         } else {
-            $this->logger->debug('Cloned state with undefined id.');
+            $logger->debug('Cloned state with undefined id.');
         }
 
         return $clonedState;

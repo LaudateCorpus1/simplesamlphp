@@ -47,11 +47,11 @@ class TargetedID extends Auth\ProcessingFilter
      */
     private bool $generateNameId = false;
 
-    /**
-     * @var \SimpleSAML\Utils\Config
-     */
+    /** @var \SimpleSAML\Utils\Config */
     protected $configUtils;
 
+    /** @var \SimpleSAML\Logger */
+    private Logger $logger;
 
     /**
      * Initialize this filter.
@@ -78,6 +78,7 @@ class TargetedID extends Auth\ProcessingFilter
             }
         }
 
+        $this->logger = new Logger();
         $this->configUtils = new Utils\Config();
     }
 
@@ -102,7 +103,7 @@ class TargetedID extends Auth\ProcessingFilter
     {
         Assert::keyExists($state, 'Attributes');
         if (!array_key_exists($this->identifyingAttribute, $state['Attributes'])) {
-            Logger::warning(
+            $this->logger->warning(
                 sprintf(
                     "core:TargetedID: Missing attribute '%s', which is needed to generate the TargetedID.",
                     $this->identifyingAttribute

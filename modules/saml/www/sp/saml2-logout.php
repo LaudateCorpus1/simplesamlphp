@@ -74,6 +74,7 @@ if ($destination !== null && $destination !== $httpUtils->getSelfURLNoQuery()) {
     throw new Error\Exception('Destination in logout message is wrong.');
 }
 
+$logger = new Logger();
 if ($message instanceof LogoutResponse) {
     $relayState = $message->getRelayState();
     if ($relayState === null) {
@@ -82,7 +83,7 @@ if ($message instanceof LogoutResponse) {
     }
 
     if (!$message->isSuccess()) {
-        Logger::warning(
+        $logger->warning(
             'Unsuccessful logout. Status was: ' . Module\saml\Message::getResponseError($message)
         );
     }
@@ -91,8 +92,8 @@ if ($message instanceof LogoutResponse) {
     $state['saml:sp:LogoutStatus'] = $message->getStatus();
     \SimpleSAML\Auth\Source::completeLogout($state);
 } elseif ($message instanceof LogoutRequest) {
-    Logger::debug('module/saml2/sp/logout: Request from ' . $idpEntityId);
-    Logger::stats('saml20-idp-SLO idpinit ' . $spEntityId . ' ' . $idpEntityId);
+    $logger->debug('module/saml2/sp/logout: Request from ' . $idpEntityId);
+    $logger->stats('saml20-idp-SLO idpinit ' . $spEntityId . ' ' . $idpEntityId);
 
     if ($message->isNameIdEncrypted()) {
         try {
@@ -107,11 +108,11 @@ if ($message instanceof LogoutResponse) {
         foreach ($keys as $i => $key) {
             try {
                 $message->decryptNameId($key, $blacklist);
-                Logger::debug('Decryption with key #' . $i . ' succeeded.');
+                $logger->debug('Decryption with key #' . $i . ' succeeded.');
                 $lastException = null;
                 break;
             } catch (Exception $e) {
-                Logger::debug('Decryption with key #' . $i . ' failed with exception: ' . $e->getMessage());
+                $logger->debug('Decryption with key #' . $i . ' failed with exception: ' . $e->getMessage());
                 $lastException = $e;
             }
         }
@@ -137,7 +138,7 @@ if ($message instanceof LogoutResponse) {
     $lr->setInResponseTo($message->getId());
 
     if ($numLoggedOut < count($sessionIndexes)) {
-        Logger::warning('Logged out of ' . $numLoggedOut . ' of ' . count($sessionIndexes) . ' sessions.');
+        $logger->warning('Logged out of ' . $numLoggedOut . ' of ' . count($sessionIndexes) . ' sessions.');
     }
 
     $dst = $idpMetadata->getEndpointPrioritizedByBinding(

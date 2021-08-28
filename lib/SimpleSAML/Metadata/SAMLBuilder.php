@@ -64,6 +64,9 @@ class SAMLBuilder
      */
     private ?int $maxDuration = null;
 
+    /** @var \SimpleSAML\Logger */
+    private Logger $logger;
+
 
     /**
      * Initialize the SAML builder.
@@ -77,7 +80,7 @@ class SAMLBuilder
     {
         $this->maxCache = $maxCache;
         $this->maxDuration = $maxDuration;
-
+        $this->logger = new Logger();
         $this->entityDescriptor = new EntityDescriptor();
         $this->entityDescriptor->setEntityID($entityId);
     }
@@ -490,7 +493,7 @@ class SAMLBuilder
                 $this->addAttributeAuthority($metadata);
                 break;
             default:
-                Logger::warning('Unable to generate metadata for unknown type \'' . $set . '\'.');
+                $this->logger->warning('Unable to generate metadata for unknown type \'' . $set . '\'.');
         }
     }
 

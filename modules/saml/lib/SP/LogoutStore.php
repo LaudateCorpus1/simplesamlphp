@@ -17,7 +17,6 @@ use SimpleSAML\Utils;
  *
  * @package SimpleSAMLphp
  */
-
 class LogoutStore
 {
     /**
@@ -27,6 +26,7 @@ class LogoutStore
      */
     private static function createLogoutTable(Store\SQL $store): void
     {
+        $logger = new Logger();
         $tableVer = $store->getTableVersion('saml_LogoutStore');
         if ($tableVer === 4) {
             return;
@@ -84,7 +84,7 @@ class LogoutStore
                     $store->pdo->exec($query);
                 }
             } catch (\Exception $e) {
-                Logger::warning('Database error: ' . var_export($store->pdo->errorInfo(), true));
+                $logger->warning('Database error: ' . var_export($store->pdo->errorInfo(), true));
                 return;
             }
             $store->setTableVersion('saml_LogoutStore', 4);
@@ -175,7 +175,7 @@ class LogoutStore
                     $store->pdo->exec($query);
                 }
             } catch (\Exception $e) {
-                Logger::warning('Database error: ' . var_export($store->pdo->errorInfo(), true));
+                $logger->warning('Database error: ' . var_export($store->pdo->errorInfo(), true));
                 return;
             }
             $store->setTableVersion('saml_LogoutStore', 2);
@@ -212,7 +212,8 @@ class LogoutStore
      */
     private static function cleanLogoutStore(Store\SQL $store): void
     {
-        Logger::debug('saml.LogoutStore: Cleaning logout store.');
+        $logger = new Logger();
+        $logger->debug('saml.LogoutStore: Cleaning logout store.');
 
         $query = 'DELETE FROM ' . $store->prefix . '_saml_LogoutStore WHERE _expire < :now';
         $params = ['now' => gmdate('Y-m-d H:i:s')];
@@ -425,10 +426,11 @@ class LogoutStore
             $sessionIndexes = array_keys($sessions);
         }
 
+        $logger = new Logger();
         $numLoggedOut = 0;
         foreach ($sessionIndexes as $sessionIndex) {
             if (!isset($sessions[$sessionIndex])) {
-                Logger::info('saml.LogoutStore: Logout requested for unknown SessionIndex.');
+                $logger->info('saml.LogoutStore: Logout requested for unknown SessionIndex.');
                 continue;
             }
 
@@ -436,18 +438,18 @@ class LogoutStore
 
             $session = Session::getSession($sessionId);
             if ($session === null) {
-                Logger::info('saml.LogoutStore: Skipping logout of missing session.');
+                $logger->info('saml.LogoutStore: Skipping logout of missing session.');
                 continue;
             }
 
             if (!$session->isValid($authId)) {
-                Logger::info(
+                $logger->info(
                     'saml.LogoutStore: Skipping logout of session because it isn\'t authenticated.'
                 );
                 continue;
             }
 
-            Logger::info(
+            $logger->info(
                 'saml.LogoutStore: Logging out of session with trackId [' . $session->getTrackID() . '].'
             );
             $session->doLogout($authId);

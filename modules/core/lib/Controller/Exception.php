@@ -27,6 +27,9 @@ class Exception
     /** @var \SimpleSAML\Configuration */
     protected Configuration $config;
 
+    /** @var \SimpleSAML\Logger */
+    protected Logger $logger;
+
     /** @var \SimpleSAML\Session */
     protected Session $session;
 
@@ -46,6 +49,7 @@ class Exception
         Session $session
     ) {
         $this->config = $config;
+        $this->logger = new Logger();
         $this->session = $session;
     }
 
@@ -68,7 +72,7 @@ class Exception
         /** @var array $state */
         $state = Auth\State::loadState($stateId, 'core:cardinality');
 
-        Logger::stats(
+        $this->logger->stats(
             'core:cardinality:error ' . $state['Destination']['entityid'] . ' ' . $state['saml:sp:IdP'] .
             ' ' . implode(',', array_keys($state['core:cardinality:errorAttributes']))
         );

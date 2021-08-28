@@ -41,11 +41,7 @@ class ScopeFromAttribute extends Auth\ProcessingFilter
      */
     private string $targetAttribute;
 
-    /**
-     * The Logger to use
-     *
-     * @var \SimpleSAML\Logger
-     */
+    /** @var \SimpleSAML\Logger */
     private Logger $logger;
 
 

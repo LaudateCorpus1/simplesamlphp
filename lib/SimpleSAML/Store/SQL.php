@@ -46,6 +46,9 @@ class SQL extends Store
      */
     private array $tableVersions;
 
+    /** @var \SimpleSAML\Logger */
+    private Logger $logger;
+
 
     /**
      * Initialize the SQL data store.
@@ -53,6 +56,7 @@ class SQL extends Store
     public function __construct()
     {
         $config = Configuration::getInstance();
+        $this->logger = new Logger();
 
         $dsn = $config->getString('store.sql.dsn');
         $username = $config->getString('store.sql.username', null);
@@ -276,7 +280,7 @@ class SQL extends Store
      */
     private function cleanKVStore(): void
     {
-        Logger::debug('store.sql: Cleaning key-value store.');
+        $this->logger->debug('store.sql: Cleaning key-value store.');
 
         $query = 'DELETE FROM ' . $this->prefix . '_kvstore WHERE _expire < :now';
         $params = ['now' => gmdate('Y-m-d H:i:s')];

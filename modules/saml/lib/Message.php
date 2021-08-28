@@ -134,6 +134,8 @@ class Message
      */
     public static function checkSign(Configuration $srcMetadata, SignedElement $element): bool
     {
+        $logger = new Logger();
+
         // find the public key that should verify signatures by this entity
         $keys = $srcMetadata->getPublicKeys('signing');
         if (!empty($keys)) {
@@ -146,7 +148,7 @@ class Message
                             "-----END CERTIFICATE-----\n";
                         break;
                     default:
-                        Logger::debug('Skipping unknown key type: ' . $key['type']);
+                        $logger->debug('Skipping unknown key type: ' . $key['type']);
                 }
             }
         } else {
@@ -156,7 +158,7 @@ class Message
             );
         }
 
-        Logger::debug('Has ' . count($pemKeys) . ' candidate keys for validation.');
+        $logger->debug('Has ' . count($pemKeys) . ' candidate keys for validation.');
 
         $lastException = null;
         foreach ($pemKeys as $i => $pem) {
@@ -167,12 +169,12 @@ class Message
                 // make sure that we have a valid signature on either the response or the assertion
                 $res = $element->validate($key);
                 if ($res) {
-                    Logger::debug('Validation with key #' . $i . ' succeeded.');
+                    $logger->debug('Validation with key #' . $i . ' succeeded.');
                     return true;
                 }
-                Logger::debug('Validation with key #' . $i . ' failed without exception.');
+                $logger->debug('Validation with key #' . $i . ' failed without exception.');
             } catch (\Exception $e) {
-                Logger::debug('Validation with key #' . $i . ' failed with exception: ' . $e->getMessage());
+                $logger->debug('Validation with key #' . $i . ' failed with exception: ' . $e->getMessage());
                 $lastException = $e;
             }
         }
@@ -373,13 +375,14 @@ class Message
         $blacklist = self::getBlacklistedAlgorithms($srcMetadata, $dstMetadata);
 
         $lastException = null;
+        $logger = new Logger();
         foreach ($keys as $i => $key) {
             try {
                 $ret = $assertion->getAssertion($key, $blacklist);
-                Logger::debug('Decryption with key #' . $i . ' succeeded.');
+                $logger->debug('Decryption with key #' . $i . ' succeeded.');
                 return $ret;
             } catch (\Exception $e) {
-                Logger::debug('Decryption with key #' . $i . ' failed with exception: ' . $e->getMessage());
+                $logger->debug('Decryption with key #' . $i . ' failed with exception: ' . $e->getMessage());
                 $lastException = $e;
             }
         }
@@ -421,14 +424,15 @@ class Message
         $blacklist = self::getBlacklistedAlgorithms($srcMetadata, $dstMetadata);
 
         $error = true;
+        $logger = new Logger();
         foreach ($keys as $i => $key) {
             try {
                 $assertion->decryptAttributes($key, $blacklist);
-                Logger::debug('Attribute decryption with key #' . $i . ' succeeded.');
+                $logger->debug('Attribute decryption with key #' . $i . ' succeeded.');
                 $error = false;
                 break;
             } catch (\Exception $e) {
-                Logger::debug('Attribute decryption failed with exception: ' . $e->getMessage());
+                $logger->debug('Attribute decryption failed with exception: ' . $e->getMessage());
             }
         }
         if ($error) {
@@ -847,14 +851,15 @@ class Message
             $blacklist = self::getBlacklistedAlgorithms($idpMetadata, $spMetadata);
 
             $lastException = null;
+            $logger = new Logger();
             foreach ($keys as $i => $key) {
                 try {
                     $assertion->decryptNameId($key, $blacklist);
-                    Logger::debug('Decryption with key #' . $i . ' succeeded.');
+                    $logger->debug('Decryption with key #' . $i . ' succeeded.');
                     $lastException = null;
                     break;
                 } catch (\Exception $e) {
-                    Logger::debug('Decryption with key #' . $i . ' failed with exception: ' . $e->getMessage());
+                    $logger->debug('Decryption with key #' . $i . ' failed with exception: ' . $e->getMessage());
                     $lastException = $e;
                 }
             }

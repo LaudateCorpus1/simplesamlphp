@@ -820,7 +820,7 @@ class SP extends \SimpleSAML\Auth\Source
              * starting the authentication process again with a different IdP, or
              * cancel the current SSO attempt.
              */
-            $this->Logger->warning(
+            $this->logger->warning(
                 "Reauthentication after logout is needed. The IdP '${state['saml:sp:IdP']}' is not in the IDPList " .
                 "provided by the Service Provider '${state['core:SP']}'."
             );
@@ -941,7 +941,7 @@ class SP extends \SimpleSAML\Auth\Source
         /** @var \SimpleSAML\Module\saml\Auth\Source\SP $sp */
         $sp = Auth\Source::getById($state['saml:sp:AuthId'], Module\saml\Auth\Source\SP::class);
 
-        $this->logger->debug('Proxy: logging in again.');
+        $logger->debug('Proxy: logging in again.');
         $sp->authenticate($state);
         Assert::true(false);
     }

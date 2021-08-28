@@ -195,8 +195,9 @@ class Logger extends AbstractLogger
      */
     public static function flush(): void
     {
+        $logger = new self();
         foreach (self::$earlyLog as $msg) {
-            $this->log($msg['level'], $msg['string'], $msg['statsLog']);
+            $logger->log($msg['level'], $msg['string'], $msg['statsLog']);
         }
         self::$earlyLog = [];
     }
@@ -376,7 +377,8 @@ class Logger extends AbstractLogger
         } catch (Exception $e) {
             self::$loggingHandler = new ErrorLogLoggingHandler($config);
             self::$initializing = false;
-            $this->log(LogLevel::CRITICAL, $e->getMessage(), false);
+            $logger = new self();
+            $logger->log(LogLevel::CRITICAL, $e->getMessage(), ['statsLog' => false]);
         }
     }
 
@@ -384,7 +386,7 @@ class Logger extends AbstractLogger
     /**
      * System is unusable.
      *
-     * @param string $level
+     * @param mixed $level
      * @param string $message
      * @param array  $context
      *

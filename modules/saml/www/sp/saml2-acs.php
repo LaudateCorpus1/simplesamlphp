@@ -70,6 +70,7 @@ $issuer = $issuer->getValue();
 $session = Session::getSessionFromRequest();
 $prevAuth = $session->getAuthData($sourceId, 'saml:sp:prevAuth');
 
+$logger = new Logger();
 $httpUtils = new Utils\HTTP();
 if ($prevAuth !== null && $prevAuth['id'] === $response->getId() && $prevAuth['issuer'] === $issuer) {
     /* OK, it looks like this message has the same issuer
@@ -79,14 +80,14 @@ if ($prevAuth !== null && $prevAuth['id'] === $response->getId() && $prevAuth['i
      * In that case we may as well just redo the previous redirect
      * instead of displaying a confusing error message.
      */
-    Logger::info(
+    $logger->info(
         'Duplicate SAML 2 response detected - ignoring the response and redirecting the user to the correct page.'
     );
     if (isset($prevAuth['redirect'])) {
         $httpUtils->redirectTrustedURL($prevAuth['redirect']);
     }
 
-    Logger::info('No RelayState or ReturnURL available, cannot redirect.');
+    $logger->info('No RelayState or ReturnURL available, cannot redirect.');
     throw new Error\Exception('Duplicate assertion received.');
 }
 
@@ -100,7 +101,7 @@ if (!empty($stateId)) {
         $state = Auth\State::loadState($stateId, 'saml:sp:sso');
     } catch (Exception $e) {
         // something went wrong,
-        Logger::warning('Could not load state specified by InResponseTo: ' . $e->getMessage() .
+        $logger->warning('Could not load state specified by InResponseTo: ' . $e->getMessage() .
             ' Processing response as unsolicited.');
     }
 }
@@ -120,7 +121,7 @@ if ($state) {
         $idpMetadata = $source->getIdPMetadata($issuer);
         $idplist = $idpMetadata->getArrayize('IDPList', []);
         if (!in_array($state['ExpectedIssuer'], $idplist, true)) {
-            Logger::warning(
+            $logger->warning(
                 'The issuer of the response not match to the identity provider we sent the request to.'
             );
         }
@@ -135,7 +136,7 @@ if ($state) {
     ];
 }
 
-Logger::debug('Received SAML2 Response from ' . var_export($issuer, true) . '.');
+$logger->debug('Received SAML2 Response from ' . var_export($issuer, true) . '.');
 
 if (is_null($idpMetadata)) {
     $idpMetadata = $source->getIdPmetadata($issuer);
