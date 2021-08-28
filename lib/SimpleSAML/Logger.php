@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SimpleSAML;
 
 use Exception;
+use Psr\Log\AbstractLogger;
 use Psr\Log\LogLevel;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Logger\ErrorLogLoggingHandler;
@@ -18,7 +19,7 @@ use SimpleSAML\Logger\SyslogLoggingHandler;
  *
  * @package SimpleSAMLphp
  */
-class Logger
+class Logger extends AbstractLogger
 {
     /**
      * @var \SimpleSAML\Logger\LoggingHandlerInterface|null
@@ -132,102 +133,17 @@ class Logger
 
 
     /**
-     * Log an emergency message.
-     *
-     * @param string $string The message to log.
-     */
-    public static function emergency(string $string): void
-    {
-        self::log(LogLevel::EMERGENCY, $string);
-    }
-
-
-    /**
-     * Log a critical message.
-     *
-     * @param string $string The message to log.
-     */
-    public static function critical(string $string): void
-    {
-        self::log(LogLevel::CRITICAL, $string);
-    }
-
-
-    /**
-     * Log an alert.
-     *
-     * @param string $string The message to log.
-     */
-    public static function alert(string $string): void
-    {
-        self::log(LogLevel::ALERT, $string);
-    }
-
-
-    /**
-     * Log an error.
-     *
-     * @param string $string The message to log.
-     */
-    public static function error(string $string): void
-    {
-        self::log(LogLevel::ERROR, $string);
-    }
-
-
-    /**
-     * Log a warning.
-     *
-     * @param string $string The message to log.
-     */
-    public static function warning(string $string): void
-    {
-        self::log(LogLevel::WARNING, $string);
-    }
-
-
-    /**
-     * We reserve the notice level for statistics, so do not use this level for other kind of log messages.
-     *
-     * @param string $string The message to log.
-     */
-    public static function notice(string $string): void
-    {
-        self::log(LogLevel::NOTICE, $string);
-    }
-
-
-    /**
-     * Info messages are a bit less verbose than debug messages. This is useful to trace a session.
-     *
-     * @param string $string The message to log.
-     */
-    public static function info(string $string): void
-    {
-        self::log(LogLevel::INFO, $string);
-    }
-
-
-    /**
-     * Debug messages are very verbose, and will contain more information than what is necessary for a production
-     * system.
-     *
-     * @param string $string The message to log.
-     */
-    public static function debug(string $string): void
-    {
-        self::log(LogLevel::DEBUG, $string);
-    }
-
-
-    /**
      * Statistics.
      *
-     * @param string $string The message to log.
+     * @param string|\Stringable $message
+     * @param array  $context
+     *
+     * @return void
      */
-    public static function stats(string $string): void
+    public function stats(string|\Stringable $message, array $context = []): void
     {
-        self::log(LogLevel::NOTICE, $string, self::$logLevel >= LogLevel::NOTICE);
+        $context['statsLog'] = true;
+        $this->log(LogLevel::EMERGENCY, $message, $context);
     }
 
 
@@ -280,7 +196,7 @@ class Logger
     public static function flush(): void
     {
         foreach (self::$earlyLog as $msg) {
-            self::log($msg['level'], $msg['string'], $msg['statsLog']);
+            $this->:log($msg['level'], $msg['string'], $msg['statsLog']);
         }
         self::$earlyLog = [];
     }
@@ -466,12 +382,20 @@ class Logger
 
 
     /**
-     * @param string $level
-     * @param string $string
-     * @param bool $statsLog
+     * System is unusable.
+     *
+     * @param string|\Stringable $message
+     * @param array  $context
+     *
+     * @return void
      */
-    private static function log(string $level, string $string, bool $statsLog = false): void
+    public function log(string|\Stringable $message, array $context = []): void
     {
+        $statsLog = false;
+        if (array_key_exists('statsLog', $context)) {
+            $statsLog = boolval($context['statsLog']);
+        }
+
         if (self::$initializing) {
             // some error occurred while initializing logging
             self::defer($level, $string, $statsLog);
